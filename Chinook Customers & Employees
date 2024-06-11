@@ -1,0 +1,100 @@
+--selects customers from Brazil
+SELECT customerid, firstname, lastname
+FROM chinook.customers
+WHERE country = 'Brazil';
+
+--customers not in the USA
+SELECT customerid, firstname, lastname, country
+FROM chinook.customers
+WHERE country <> 'USA';
+
+--employees who are sales agents
+SELECT employeeid, employees.lastname, employees.firstname
+FROM chinook.employees
+WHERE title = 'Sales Support Agent';
+
+--Find the Invoices of customers who are from Brazil
+SELECT firstname, lastname, invoiceid, invoicedate, billingcountry
+FROM customers
+LEFT JOIN invoices
+ON invoices.customerid = customers.customerid
+WHERE country = 'Brazil';
+
+--distinct billing country from Invoices
+SELECT distinct billingcountry
+FROM invoices;
+
+--invoices per salaes agent
+SELECT employees.firstname, employees.lastname, invoices.invoiceid
+FROM employees
+JOIN customers
+ON customers.SupportRepId = employees.EmployeeId
+JOIN invoices
+ON invoices.CustomerId = customers.CustomerId;
+
+-- invoice Total, Customer name, Country, and Sales Agent name for all invoices and customers
+SELECT invoices.Total, customers.LastName, customers.FirstName, customers.Country, employees.lastname, employees.FirstName
+FROM employees
+JOIN invoices
+ON invoices.CustomerId = customers.CustomerId
+JOIN customers
+ON employees.EmployeeId = customers.SupportRepId;
+
+--invoices in 2009
+SELECT COUNT (*)
+FROM invoices
+WHERE invoices.InvoiceDate LIKE '%2009%';
+
+--total sales in 2009
+SELECT SUM(total)
+FROM invoices
+WHERE invoices.InvoiceDate LIKE '%2009%';
+
+--purchased track name with each invoice line ID
+SELECT tracks.Name, invoice_items.InvoiceLineId
+FROM invoice_items
+JOIN tracks
+ON tracks.TrackId = invoice_items.InvoiceLineId;
+
+--purchased track name and artist name with each invoice line ID
+SELECT tracks.Name, artists.Name, invoice_items.InvoiceLineId
+FROM invoice_items
+LEFT JOIN tracks
+ON tracks.TrackId = invoice_items.InvoiceLineId
+INNER JOIN albums
+ON albums.AlbumId = tracks.AlbumId
+LEFT JOIN artists
+ON artists.ArtistId = albums.ArtistId;
+
+--all Tracks, Album name, Media type, and Genre
+SELECT tracks.Name AS 'Track Name', albums.Title AS 'Album Name', media_types.Name AS 'Media Type', genres.Name AS 'Genre'
+FROM tracks
+JOIN albums
+ON albums.AlbumId = tracks.AlbumId
+JOIN media_types
+ON media_types.MediaTypeId = tracks.MediaTypeId
+JOIN genres
+ON genres.GenreId = tracks.GenreId;
+
+--total sales made by each sales agent
+SELECT employees.FirstName, employees.LastName, ROUND(SUM(invoices.Total), 2) AS 'Total Sales'
+FROM employees
+JOIN customers
+ON employees.EmployeeId = customers.SupportRepId
+JOIN invoices
+ON invoices.CustomerId = customers.customerId
+WHERE employees.Title = 'Sales Support Agent'
+GROUP BY employees.FirstName;
+
+--sales agent that made the most dollars in sales in 2009
+SELECT employees.FirstName, employees.LastName, ROUND(SUM(invoices.Total), 2) AS 'Total Sales'
+FROM employees
+JOIN customers
+ON employees.EmployeeId = customers.SupportRepId
+JOIN invoices
+ON invoices.CustomerId = customers.customerId
+WHERE employees.Title = 'Sales Support Agent'
+AND invoices.InvoiceDate LIKE '%2009%'
+GROUP BY employees.FirstName
+ORDER BY 'Total Sales' DESC
+LIMIT 1;
